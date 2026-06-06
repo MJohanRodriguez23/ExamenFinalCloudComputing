@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Stack Security Groups - Jorge-Miguel
+
+Resources:
+
+  SGParaEC2:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: SG-EC2-Jorge-Miguel
+      GroupDescription: Security Group para instancia EC2 publica
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: SG-EC2-Jorge-Miguel
+
+  SGParaALB:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: SG-ALB-Jorge-Miguel
+      GroupDescription: Security Group para Application Load Balancer
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: SG-ALB-Jorge-Miguel
+
+Outputs:
+
+  SGEc2Id:
+    Description: ID del Security Group de la EC2
+    Value: !GetAtt SGParaEC2.GroupId
+    Export:
+      Name: SG-EC2-Jorge-Miguel
+
+  SGAlbId:
+    Description: ID del Security Group del ALB
+    Value: !GetAtt SGParaALB.GroupId
+    Export:
+      Name: SG-ALB-Jorge-Miguel
