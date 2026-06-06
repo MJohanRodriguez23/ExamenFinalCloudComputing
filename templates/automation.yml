@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Stack 4 - Automatizacion y Acciones Programadas creadas desde GitHub
+
+Resources:
+
+  # Version 2 del Launch Template (Cambia el texto de la página web)
+  MyLaunchTemplateVersion2:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: LT-Jorge-Miguel # Mismo nombre crea una nueva version
+      LaunchTemplateData:
+        ImageId: ami-0cca150d127c2216f
+        InstanceType: t3.micro
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            yum update -y
+            yum install -y httpd
+            systemctl start httpd
+            systemctl enable httpd
+            echo "<h1>App Escalable - NUEVA VERSION 2 - Jorge-Miguel</h1>" > /var/www/html/index.html
+
+  # Acción Programada 1: Incremento mañana (8:00 AM)
+  ScaleUpMorning:
+    Type: AWS::AutoScaling::ScheduledAction
+    Properties:
+      AutoScalingGroupName: ASG-Jorge-Miguel
+      DesiredCapacity: 4
+      MinSize: 2
+      MaxSize: 6
+      Recurrence: "0 8 * * *"
+
+  # Acción Programada 2: Incremento tarde (2:00 PM)
+  ScaleUpAfternoon:
+    Type: AWS::AutoScaling::ScheduledAction
+    Properties:
+      AutoScalingGroupName: ASG-Jorge-Miguel
+      DesiredCapacity: 3
+      Recurrence: "0 14 * * *"
+
+  # Acción Programada 3: Reducción almuerzo (12:00 PM)
+  ScaleDownNoon:
+    Type: AWS::AutoScaling::ScheduledAction
+    Properties:
+      AutoScalingGroupName: ASG-Jorge-Miguel
+      DesiredCapacity: 1
+      Recurrence: "0 12 * * *"
+
+  # Acción Programada 4: Reducción noche (10:00 PM)
+  ScaleDownNight:
+    Type: AWS::AutoScaling::ScheduledAction
+    Properties:
+      AutoScalingGroupName: ASG-Jorge-Miguel
+      DesiredCapacity: 1
+      Recurrence: "0 22 * * *"

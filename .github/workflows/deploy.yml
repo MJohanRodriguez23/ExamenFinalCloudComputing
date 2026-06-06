@@ -1,0 +1,49 @@
+name: Deploy Infrastructure
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout codigo
+        uses: actions/checkout@v3
+
+      - name: Configurar credenciales AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy Stack Security Groups
+        run: |
+          aws cloudformation deploy \
+            --template-file templates/security.yml \
+            --stack-name SecurityGroups-Jorge-Miguel \
+            --capabilities CAPABILITY_NAMED_IAM
+
+      - name: Deploy Stack EC2 Estatica
+        run: |
+          aws cloudformation deploy \
+            --template-file templates/ec2.yml \
+            --stack-name EC2-Jorge-Miguel \
+            --capabilities CAPABILITY_NAMED_IAM
+
+      - name: Deploy Stack ALB y ASG
+        run: |
+          aws cloudformation deploy \
+            --template-file templates/alb-asg.yml \
+            --stack-name ALB-ASG-Jorge-Miguel \
+            --capabilities CAPABILITY_NAMED_IAM
+
+      - name: Deploy Stack Automation
+        run: |
+          aws cloudformation deploy \
+            --template-file templates/automation.yml \
+            --stack-name Automation-Jorge-Miguel \
+            --capabilities CAPABILITY_NAMED_IAM
