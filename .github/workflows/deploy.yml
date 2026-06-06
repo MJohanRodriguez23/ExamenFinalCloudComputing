@@ -24,26 +24,26 @@ jobs:
         run: |
           aws cloudformation deploy \
             --template-file templates/security.yml \
-            --stack-name SecurityGroups-TuNombre-TuApellido \
+            --stack-name SecurityGroups-Jorge-MiguelJorge-Miguel \
             --capabilities CAPABILITY_NAMED_IAM
 
       - name: Deploy Stack EC2 Estatica
         run: |
           aws cloudformation deploy \
             --template-file templates/ec2.yml \
-            --stack-name EC2-TuNombre-TuApellido \
+            --stack-name EC2-Jorge-Miguel \
             --capabilities CAPABILITY_NAMED_IAM
 
       - name: Deploy Stack ALB y ASG
         run: |
           aws cloudformation deploy \
             --template-file templates/alb-asg.yml \
-            --stack-name ALB-ASG-TuNombre-TuApellido \
+            --stack-name ALB-ASG-Jorge-Miguel \
             --capabilities CAPABILITY_NAMED_IAM
 
       - name: Deploy Stack Automation
         run: |
           aws cloudformation deploy \
             --template-file templates/automation.yml \
-            --stack-name Automation-TuNombre-TuApellido \
+            --stack-name Automation-Jorge-Miguel \
             --capabilities CAPABILITY_NAMED_IAM
