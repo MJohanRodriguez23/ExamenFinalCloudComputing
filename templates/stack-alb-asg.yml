@@ -8,7 +8,7 @@ Parameters:
 
 Resources:
 
-  # 1. Application Load Balancer
+  # 1. Application Load Balancer (Enlaza redes de la VPC por defecto)
   MyApplicationLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -18,7 +18,6 @@ Resources:
       SecurityGroups:
         - !ImportValue 
           Fn::Sub: '${SecurityStackName}-ALBSecurityGroupId'
-      # NOTA: Al omitir la propiedad "Subnets", AWS asocia automáticamente las subredes públicas por defecto de tu VPC.
 
   MyALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -40,7 +39,7 @@ Resources:
       Port: 80
       Protocol: HTTP
 
-  # 3. Launch Template (Estructura de tu plantilla base)
+  # 3. Launch Template - Versión 1
   MyServerLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     Properties:
@@ -75,7 +74,7 @@ Resources:
         Version: '1'
       AvailabilityZones:
         - us-east-1a
-        - us-east-1b # Distribuye automáticamente las instancias en las zonas por defecto de la región
+        - us-east-1b
 
   # 5. Warm Pool (Obligatorio en la rúbrica)
   MyWarmPool:
