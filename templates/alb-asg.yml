@@ -1,55 +1,52 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Stack 3 - Balanceo y Escalabilidad (ALB + ASG + Warm Pool) - Jorge-Miguel
+Description: Stack 3 - Balanceo y Escalabilidad Jorge - Miguel
 
 Parameters:
-  SecurityStackName:
-    Type: String
-    Default: SecurityGroups-Jorge-Miguel
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  Subnets:
+    Type: List<AWS::EC2::Subnet::Id>
 
 Resources:
-
-  # 1. Application Load Balancer
-  MyApplicationLoadBalancer:
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    Properties:
-      Name: ALB-Jorge-Miguel
-      Scheme: internet-facing
-      Type: application
-      SecurityGroups:
-        - !ImportValue 
-          Fn::Sub: '${SecurityStackName}-ALBSecurityGroupId'
-
-  MyALBListener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties:
-      LoadBalancerArn: !Ref MyApplicationLoadBalancer
-      Port: 80
-      Protocol: HTTP
-      DefaultActions:
-        - Type: forward
-          TargetGroupArn: !Ref MyALBTargetGroup
-
-  # 2. Target Group
-  MyALBTargetGroup:
+  TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: TG-Jorge-Miguel
+      Name: tg-Jorge-Miguel
+      Port: 80
+      Protocol: HTTP
+      VpcId: !Ref VpcId
+      TargetType: instance
+      HealthCheckIntervalSeconds: 30
       HealthCheckPath: /
-      HealthCheckProtocol: HTTP
+
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: alb-Jorge-Miguel
+      Subnets: !Ref Subnets
+      SecurityGroups:
+        - !ImportValue SG-ALB-Jorge-Miguel
+      Type: application
+
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+      LoadBalancerArn: !Ref ALB
       Port: 80
       Protocol: HTTP
 
-  # 3. Launch Template
-  MyServerLaunchTemplate:
+  LaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     Properties:
-      LaunchTemplateName: LT-Jorge-Miguel
+      LaunchTemplateName: lt-Jorge-Miguel
       LaunchTemplateData:
         ImageId: ami-0cca150d127c2216f
         InstanceType: t3.micro
         SecurityGroupIds:
-          - !ImportValue 
-            Fn::Sub: '${SecurityStackName}-EC2SecurityGroupId'
+          - !ImportValue SG-ASG-Jorge-Miguel
         UserData:
           Fn::Base64: !Sub |
             #!/bin/bash
@@ -57,34 +54,36 @@ Resources:
             yum install -y httpd
             systemctl start httpd
             systemctl enable httpd
-            echo "<h1>App Escalable - Version 1 - Jorge y Miguel</h1>" > /var/www/html/index.html
+            echo "<h1>Hello World from $(hostname -f) - V2</h1>" > /var/www/html/index.html
 
-  # 4. Auto Scaling Group
-  MyAutoScalingGroup:
+  AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
-      AutoScalingGroupName: ASG-Jorge-Miguel
-      MinSize: '1'
-      MaxSize: '4'
+      AutoScalingGroupName: asg-Jorge-Miguel
+      VPCZoneIdentifier: !Ref Subnets
+      LaunchTemplate:
+        LaunchTemplateId: !Ref LaunchTemplate
+        Version: !GetAtt LaunchTemplate.LatestVersionNumber
+      MinSize: '2'
+      MaxSize: '6'
       DesiredCapacity: '2'
       TargetGroupARNs:
-        - !Ref MyALBTargetGroup
-      LaunchTemplate:
-        LaunchTemplateId: !Ref MyServerLaunchTemplate
-        Version: '1'
-      AvailabilityZones:
-        - us-east-1a
-        - us-east-1b
+        - !Ref TargetGroup
+      HealthCheckType: ELB
+      HealthCheckGracePeriod: 300
 
-  # 5. Warm Pool
-  MyWarmPool:
+  ASGWarmPool:
     Type: AWS::AutoScaling::WarmPool
     Properties:
-      AutoScalingGroupName: !Ref MyAutoScalingGroup
-      PoolState: Stopped
+      AutoScalingGroupName: !Ref AutoScalingGroup
       MinSize: 1
+      PoolState: Stopped
 
 Outputs:
-  ALBDNSName:
-    Description: DNS del Balanceador para probar la aplicacion en el navegador
-    Value: !GetAtt MyApplicationLoadBalancer.DNSName
+  ALBDNS:
+    Description: DNS del Load Balancer
+    Value: !GetAtt ALB.DNSName
+  ASGName:
+    Value: !Ref AutoScalingGroup
+    Export:
+      Name: ASGName-Jorge-Miguel
