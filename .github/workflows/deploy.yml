@@ -38,8 +38,20 @@ jobs:
 
       - name: Deploy Stack ALB y ASG
         run: |
+          # Buscamos en la carpeta templates si existe alb-asg.yml o stack-alb-asg.yml
+          if [ -f "templates/alb-asg.yml" ]; then
+            TEMPLATE_PATH="templates/alb-asg.yml"
+          elif [ -f "templates/stack-alb-asg.yml" ]; then
+            TEMPLATE_PATH="templates/stack-alb-asg.yml"
+          else
+            echo "ERROR: No se encontró la plantilla en ninguna de sus variantes."
+            exit 255
+          fi
+          
+          echo "🚀 Desplegando Stack 3 usando la plantilla: $TEMPLATE_PATH"
+          
           aws cloudformation deploy \
-            --template-file templates/alb-asg.yml \
+            --template-file $TEMPLATE_PATH \
             --stack-name ALB-ASG-Jorge-Miguel \
             --no-fail-on-empty-changeset \
             --capabilities CAPABILITY_NAMED_IAM
