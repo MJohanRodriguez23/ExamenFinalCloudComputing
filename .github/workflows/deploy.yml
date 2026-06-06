@@ -25,6 +25,7 @@ jobs:
           aws cloudformation deploy \
             --template-file templates/security.yml \
             --stack-name SecurityGroups-Jorge-Miguel \
+            --no-fail-on-empty-changeset \
             --capabilities CAPABILITY_NAMED_IAM
 
       - name: Deploy Stack EC2 Estatica
@@ -32,13 +33,15 @@ jobs:
           aws cloudformation deploy \
             --template-file templates/ec2.yml \
             --stack-name EC2-Jorge-Miguel \
+            --no-fail-on-empty-changeset \
             --capabilities CAPABILITY_NAMED_IAM
 
       - name: Deploy Stack ALB y ASG
         run: |
           aws cloudformation deploy \
-            --template-file templates/alb-asg.yml \
+            --template-file templates/stack-alb-asg.yml \
             --stack-name ALB-ASG-Jorge-Miguel \
+            --no-fail-on-empty-changeset \
             --capabilities CAPABILITY_NAMED_IAM
 
       - name: Deploy Stack Automation
@@ -46,4 +49,5 @@ jobs:
           aws cloudformation deploy \
             --template-file templates/automation.yml \
             --stack-name Automation-Jorge-Miguel \
+            --no-fail-on-empty-changeset \
             --capabilities CAPABILITY_NAMED_IAM
