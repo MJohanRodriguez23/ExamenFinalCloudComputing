@@ -8,7 +8,7 @@ Parameters:
 
 Resources:
 
-  # 1. Application Load Balancer (Usa las subredes de la zona por defecto)
+  # 1. Application Load Balancer (Usa las subredes de la zona por defecto) hola
   MyApplicationLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
