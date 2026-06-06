@@ -3,7 +3,7 @@ Description: Stack Security Groups - Jorge-Miguel
 
 Resources:
 
-  # 1. Grupo de Seguridad para el Application Load Balancer
+  # 1. Grupo de Seguridad para el ALB
   SGParaALB:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -12,7 +12,7 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          CidrIp: 0.0.0.0/0 # El ALB recibe tráfico público de internet
+          CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
@@ -21,23 +21,29 @@ Resources:
         - Key: Name
           Value: SG-ALB-Jorge-Miguel
 
-  # 2. Grupo de Seguridad para la instancia EC2
+  # 2. Grupo de Seguridad para las EC2
   SGParaEC2:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Security Group para instancia EC2 publica e instancias del ASG
+      GroupDescription: Security Group para instancias EC2
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
-          CidrIp: 0.0.0.0/0 # Permite SSH para administración
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          SourceSecurityGroupId: !Ref SGParaALB # Buenas prácticas: La EC2 solo escucha al ALB
+          CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
           Value: SG-EC2-Jorge-Miguel
+
+  # 3. Inyección de Regla Cruzada (Se usa !GetAtt para forzar estrictamente el formato sg-...)
+  PermitirTraficoDelALBaEC2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt SGParaEC2.GroupId          # Destino: ID real sg-... de la EC2
+      SourceSecurityGroupId: !GetAtt SGParaALB.GroupId  # Origen: ID real sg-... del ALB
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
 
 Outputs:
 
