@@ -1,0 +1,42 @@
+name: Destroy Cloud Infrastructure
+
+on:
+  workflow_dispatch: # Se ejecuta manualmente desde el botón de GitHub
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Destroy Automation Stack
+        run: aws cloudformation delete-stack --stack-name Automation-Jorge-Miguel
+
+      - name: Wait for Automation Destruction
+        run: aws cloudformation wait stack-delete-complete --stack-name Automation-Jorge-Miguel
+
+      - name: Destroy ALB-ASG Stack
+        run: aws cloudformation delete-stack --stack-name ALB-ASG-Jorge-Miguel
+
+      - name: Wait for ALB-ASG Destruction
+        run: aws cloudformation wait stack-delete-complete --stack-name ALB-ASG-Jorge-Miguel
+
+      - name: Destroy EC2 Stack
+        run: aws cloudformation delete-stack --stack-name EC2-Jorge-Miguel
+
+      - name: Wait for EC2 Destruction
+        run: aws cloudformation wait stack-delete-complete --stack-name EC2-Jorge-Miguel
+
+      - name: Destroy Security Stack
+        run: aws cloudformation delete-stack --stack-name SecurityGroups-Jorge-Miguel
+
+      - name: Wait for Security Destruction
+        run: aws cloudformation wait stack-delete-complete --stack-name SecurityGroups-Jorge-Miguel
