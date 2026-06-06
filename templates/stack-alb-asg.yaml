@@ -4,7 +4,7 @@ Description: Stack 3 - Balanceo y Escalabilidad (ALB + ASG + Warm Pool)
 Parameters:
   SecurityStackName:
     Type: String
-    Default: SecurityGroups-migue-jorge
+    Default: SecurityGroups-Jorge-Miguel
 
 Resources:
 
@@ -58,7 +58,7 @@ Resources:
             yum install -y httpd
             systemctl start httpd
             systemctl enable httpd
-            echo "<h1>App Escalable - Version 1 - migue-jorge</h1>" > /var/www/html/index.html
+            echo "<h1>App Escalable - Version 1 - Jorge-Miguel</h1>" > /var/www/html/index.html
 
   # 4. Auto Scaling Group
   MyAutoScalingGroup:
