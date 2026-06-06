@@ -43,7 +43,7 @@ jobs:
             --stack-name ALB-ASG-Jorge-Miguel \
             --no-fail-on-empty-changeset \
             --capabilities CAPABILITY_NAMED_IAM
-
+            
       - name: Deploy Stack Automation
         run: |
           aws cloudformation deploy \
