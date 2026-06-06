@@ -4,7 +4,7 @@ Description: Stack 3 - Balanceo y Escalabilidad (ALB + ASG + Warm Pool)
 Parameters:
   SecurityStackName:
     Type: String
-    Default: SecurityGroups-migue-jorge
+    Default: SecurityGroups-Jorge-Miguel
 
 Resources:
 
@@ -12,7 +12,7 @@ Resources:
   MyApplicationLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      Name: ALB-migue-jorge
+      Name: ALB-Jorge-Miguel
       Scheme: internet-facing
       Type: application
       SecurityGroups:
@@ -34,7 +34,7 @@ Resources:
   MyALBTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: TG-migue-jorge
+      Name: TG-Jorge-Miguel
       HealthCheckPath: /
       HealthCheckProtocol: HTTP
       Port: 80
@@ -44,7 +44,7 @@ Resources:
   MyServerLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     Properties:
-      LaunchTemplateName: LT-migue-jorge
+      LaunchTemplateName: LT-Jorge-Miguel
       LaunchTemplateData:
         ImageId: ami-0cca150d127c2216f
         InstanceType: t3.micro
@@ -58,7 +58,7 @@ Resources:
             yum install -y httpd
             systemctl start httpd
             systemctl enable httpd
-            echo "<h1>App Escalable - Version 1 - migue-jorge</h1>" > /var/www/html/index.html
+            echo "<h1>App Escalable - Version 1 - Jorge-Miguel</h1>" > /var/www/html/index.html
 
   # 4. Auto Scaling Group
   MyAutoScalingGroup:
