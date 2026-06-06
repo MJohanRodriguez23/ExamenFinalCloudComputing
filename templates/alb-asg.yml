@@ -8,7 +8,7 @@ Parameters:
 
 Resources:
 
-  # 1. Application Load Balancer (Enlaza redes de la VPC por defecto)
+  # 1. Application Load Balancer
   MyApplicationLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -18,6 +18,7 @@ Resources:
       SecurityGroups:
         - !ImportValue 
           Fn::Sub: '${SecurityStackName}-ALBSecurityGroupId'
+      # Al omitir la propiedad Subnets, CloudFormation asocia automáticamente las subredes por defecto de la cuenta.
 
   MyALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -29,7 +30,7 @@ Resources:
         - Type: forward
           TargetGroupArn: !Ref MyALBTargetGroup
 
-  # 2. Target Group
+  # 2. Target Group (Grupo Destino)
   MyALBTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -39,7 +40,7 @@ Resources:
       Port: 80
       Protocol: HTTP
 
-  # 3. Launch Template - Versión 1
+  # 3. Launch Template (Plantilla de Lanzamiento con la AMI completa)
   MyServerLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     Properties:
@@ -59,7 +60,7 @@ Resources:
             systemctl enable httpd
             echo "<h1>App Escalable - Version 1 - Jorge y Miguel</h1>" > /var/www/html/index.html
 
-  # 4. Auto Scaling Group
+  # 4. Auto Scaling Group (Grupo de Auto Escalado distribuido)
   MyAutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
@@ -76,7 +77,7 @@ Resources:
         - us-east-1a
         - us-east-1b
 
-  # 5. Warm Pool (Obligatorio en la rúbrica)
+  # 5. Warm Pool (Obligatorio por rúbrica)
   MyWarmPool:
     Type: AWS::AutoScaling::WarmPool
     Properties:
@@ -86,5 +87,5 @@ Resources:
 
 Outputs:
   ALBDNSName:
-    Description: DNS del Balanceador para probar la App en el navegador
+    Description: DNS del Balanceador para probar la aplicacion en el navegador
     Value: !GetAtt MyApplicationLoadBalancer.DNSName
