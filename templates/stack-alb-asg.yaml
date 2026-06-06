@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Stack 3 - Balanceo y Escalabilidad (ALB + ASG + Warm Pool)
+
+Parameters:
+  SecurityStackName:
+    Type: String
+    Default: SecurityGroups-migue-jorge
+
+Resources:
+
+  # 1. Application Load Balancer (Usa las subredes de la zona por defecto) hola
+  MyApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: ALB-migue-jorge
+      Scheme: internet-facing
+      Type: application
+      SecurityGroups:
+        - !ImportValue 
+          Fn::Sub: '${SecurityStackName}-ALBSecurityGroupName'
+      # AWS CloudFormation asigna las subredes públicas por defecto de la VPC si no se especifican.
+
+  MyALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref MyApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref MyALBTargetGroup
+
+  # 2. Target Group
+  MyALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: TG-migue-jorge
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      Port: 80
+      Protocol: HTTP
+
+  # 3. Launch Template (Usa los datos de tu plantilla original)
+  MyServerLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: LT-migue-jorge
+      LaunchTemplateData:
+        ImageId: ami-0cca150d127c2216f
+        InstanceType: t3.micro
+        SecurityGroups:
+          - !ImportValue 
+            Fn::Sub: '${SecurityStackName}-EC2SecurityGroupName'
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            yum update -y
+            yum install -y httpd
+            systemctl start httpd
+            systemctl enable httpd
+            echo "<h1>App Escalable - Version 1 - migue-jorge</h1>" > /var/www/html/index.html
+
+  # 4. Auto Scaling Group
+  MyAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      MinSize: '1'
+      MaxSize: '4'
+      DesiredCapacity: '2'
+      TargetGroupARNs:
+        - !Ref MyALBTargetGroup
+      LaunchTemplate:
+        LaunchTemplateId: !Ref MyServerLaunchTemplate
+        Version: '1'
+      AvailabilityZones:
+        - us-east-1a # Forzar despliegue automático en tu zona de disponibilidad
+
+  # 5. Warm Pool (Obligatorio en la rúbrica)
+  MyWarmPool:
+    Type: AWS::AutoScaling::WarmPool
+    Properties:
+      AutoScalingGroupName: !Ref MyAutoScalingGroup
+      PoolState: Stopped
+      MinSize: 1
+
+Outputs:
+
+  ALBDNSName:
+    Description: DNS del Balanceador para probar la App en el navegador
+    Value: !GetAtt MyApplicationLoadBalancer.DNSName
