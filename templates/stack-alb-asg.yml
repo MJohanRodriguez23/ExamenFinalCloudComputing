@@ -18,7 +18,7 @@ Resources:
       SecurityGroups:
         - !ImportValue 
           Fn::Sub: '${SecurityStackName}-ALBSecurityGroupId'
-      # Al no poner Subnets, AWS asocia automáticamente las subredes públicas por defecto
+      # NOTA: Al omitir la propiedad "Subnets", AWS asocia automáticamente las subredes públicas por defecto de tu VPC.
 
   MyALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -40,7 +40,7 @@ Resources:
       Port: 80
       Protocol: HTTP
 
-  # 3. Launch Template
+  # 3. Launch Template (Estructura de tu plantilla base)
   MyServerLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     Properties:
@@ -75,9 +75,9 @@ Resources:
         Version: '1'
       AvailabilityZones:
         - us-east-1a
-        - us-east-1b # Distribuye automáticamente en las zonas por defecto de la región
+        - us-east-1b # Distribuye automáticamente las instancias en las zonas por defecto de la región
 
-  # 5. Warm Pool (Requerido por la rúbrica)
+  # 5. Warm Pool (Obligatorio en la rúbrica)
   MyWarmPool:
     Type: AWS::AutoScaling::WarmPool
     Properties:
@@ -87,5 +87,5 @@ Resources:
 
 Outputs:
   ALBDNSName:
-    Description: DNS del Balanceador para probar la App
+    Description: DNS del Balanceador para probar la App en el navegador
     Value: !GetAtt MyApplicationLoadBalancer.DNSName
