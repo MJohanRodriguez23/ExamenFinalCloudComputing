@@ -39,7 +39,7 @@ jobs:
       - name: Deploy Stack ALB y ASG
         run: |
           aws cloudformation deploy \
-            --template-file templates/stack-alb-asg.yml \
+            --template-file templates/alb-asg.yml \
             --stack-name ALB-ASG-Jorge-Miguel \
             --no-fail-on-empty-changeset \
             --capabilities CAPABILITY_NAMED_IAM
